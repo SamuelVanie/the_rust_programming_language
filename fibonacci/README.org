@@ -1,0 +1,33 @@
+* Explanation of the optimization technic
+
+** Naive version of fibonacci function
+
+The naive version of fibonacci technic consist in using recursing. It is just the translation of the mathematic formula.
+
+The time complexity of such algorithm is exponential. I mean \theta($2^n$).
+
+You can try fibonacci_rec(100) an observe that it will take forever
+
+
+** Optimize version (Dynamic programming)
+
+The version in the file is not the most optimize version because will can still use the recursion and use memoization technic.
+
+We know that to compute fibonacci(n) we need fibonacci(n-1) and fibonacci(n-2).
+
+We also know that we cannot start directly by computing the n value because we don't know the n-2 one and the n-1 one.
+
+So the idea is to start by 2th value and reach the nth value storing the last 2 values each time.
+
+
+** Other optimization ideas
+
+With multiple computation, a memoization table will be necessary to avoid computing a value that was already computed before.
+
+We can use matrix technic to calculate the fibonacci term. And use blocking on this matrix to compute more faster this value( complexity : \theta(n) ).
+
+link : [[https://medium.com/@andrew.chamberlain/the-linear-algebra-view-of-the-fibonacci-sequence-4e81f78935a3]]
+
+The divide and conquer on the method that compute the power(n) can permit reach \theta(log(n)) on matrix fibonacci technic.
+
+*Note* : I didn't use this technics because it's not necessary. The purpose is to learn Rust language.
