@@ -12,33 +12,38 @@ fn main() {
     let choice = choice.trim();
 
     if choice == "1" {
+
         println!("Entrez la valeur en celcius:");
-        let mut celcius_val = String::new();
-
-        io::stdin()
-            .read_line(&mut celcius_val)
-            .expect("Valeur incorrecte");
-
-        let celcius_val: f32 = celcius_val.trim().parse().expect("Impossible de convertir");
-
-        let farenheit_value = (celcius_val * 9.0/5.0) + 32.0;
-        println!("la valeur en fahrenheit est : {farenheit_value}");
+        let celcius_val = take_user_input();
+        let celcius_val: f32 = celcius_val.trim().parse().expect("Vous n'avez pas entré un nombre");
+        println!("la valeur en fahrenheit est : {}", from_celcius_to_farenheit(celcius_val));
 
     } else if choice == "2" {
 
         println!("Entrez la valeur en fahrenheit:");
-        let mut fahrenheit_val = String::new();
-
-        io::stdin()
-            .read_line(&mut fahrenheit_val)
-            .expect("Valeur incorrecte");
-
+        let fahrenheit_val = take_user_input();
         let fahrenheit_val: f32 = fahrenheit_val.trim().parse().expect("Impossible de convertir");
-
-        let celcius_val = (fahrenheit_val - 32.0) * 5.0/9.0;
-        println!("la valeur en fahrenheit est : {celcius_val}");
+        println!("la valeur en fahrenheit est : {}", from_fahrenheit_to_celcius(fahrenheit_val));
 
     }
 
 
+}
+
+fn take_user_input() -> String {
+    let mut number = String::new();
+
+    io::stdin()
+        .read_line(&mut number)
+        .expect("Valeur incorrecte");
+
+    number
+}
+
+fn from_celcius_to_farenheit(cel: f32) -> f32 {
+    (cel * 9.0/5.0) + 32.0
+}
+
+fn from_fahrenheit_to_celcius(fah: f32) -> f32 {
+    (fah - 32.0) * 5.0/9.0
 }
