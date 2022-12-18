@@ -44,7 +44,8 @@
 //
 // Ex: let months = ["January", "February", "March", "April"];
 //
-// You can precise the lenght and the elements types
+// You can precise the length and the elements types
+// You cannot use variable as array length
 // Ex: let a: [i32; 5] = [1, 2, 3, 4, 5];
 //
 // Initialization with element that have the same value
