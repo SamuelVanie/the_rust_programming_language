@@ -12,6 +12,10 @@
 // 3. When the owner goes out of scope, the value will be dropped.
 
 
+// NOTE : A reference scope starts from where it is introduced an continues through the last time
+// that reference is used.
+
+
 fn main() {
     // s is not valid here because it's not yet declared
     {
@@ -54,6 +58,21 @@ fn main() {
     let x = 5; // x comes into scope
     makes_copy(x); // x would move into the function,
                     // but i32 is Copy, so it's okay to still use x afterward
+    
+    let s1 = String::from("hello");
+
+    let len = calculate_length(&s1); // we pass an adress as a parameter of the function
+
+    let mut s = String::from("hello");
+    correct_change(&mut s); // remark the mut to precise that we want a mutable reference
+   
+    let r1 = &mut s;
+    let r2 = &mut s; // we cannot have to mutable reference to the same variable
+    let r3 = &s; // we cannot also have a mutable reference and a mutable one at the same time
+    //
+    println!("{} and {}", r1, r2); // after using both mutable references we can use the immutable
+    // one
+    let r4 = &s;
 }
 
 fn takes_ownership(some_string: String){ // some_string comes into scope
@@ -70,4 +89,19 @@ fn gives_ownership() -> String {
     let some_string = String::from("yours"); // some_string comes into scope
 
     some_string // some_string is returned and moves out to the calling function
+}
+
+fn calculate_length(s: &String) -> usize { // this function uses a reference as parameter so that
+    // the ownership isn't borrow from the main scope
+    s.len() 
+} // here, s goes out of scope. But because it does not have ownership of what
+// it refers to, it is not dropped.
+// This action is called to borrow ownership
+
+fn change(some_string: &String){
+    some_string.push_str(", world"); // we cannot change something that we borrowed
+}
+
+fn correct_change(some_string: &mut String){
+    some_string.push_str(", world"); // but we can do that if we use a mutable reference
 }
