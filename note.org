@@ -1,0 +1,272 @@
+* Packages and Crates
+
+** Crates
+
+A crate is the smallest amount of code that Rust can handle.
+A crate is either a **library crate** or a **binary crate**
+
+*** Binary Crate
+
+A Binary crate can be run.
+There's only one Binary crate in a package
+
+*** library Crate
+
+A library crate can be shared accross multiple projects
+A library crate is a set of tools, a bunch of code that realize a specific task
+
+
+** Cargo convention
+
+- **src/main.rs** in the root directory mean that it's a binary crate that has the same name has the package
+- **src/lib.rs** in the root directory mean that it's a library crate that has the same name has the package
+
+
+A package can have multiple binary crates placed in src/bin directory. But each files will be a separate binary crate
+
+
+* Modules
+
+- Modules let us organize code within a crate for readability and easy reuse.
+- *use* keyword brings item into scope
+- **pub** keyword make items public
+
+- when compiling a crate the compiler first look into the crate root (src/lib.rs or src/main.rs)
+
+
+- You can declare new modules in the crate root.
+- When you declare module, for compilation, the compiler checks the *src/module_name.rs* and *src/module_name/mod.rs* folders.
+- If you declare submodules in the module, the compiler will do the same thing *src/module_name/submodule_name.rs* or *src/module_name/submodule_name/mod.rs*.
+
+- You can access code in the modules that you add if you are allowed to do so.
+
+
+
+* Privacy
+
+- Code in module is private by default from its parent.
+- To make code public you will need to add **pub mod** keyword instead of **mod**.
+
+- You can reduce repetition in your code by using the **use** keyword.
+
+#+begin_src rust
+  use crate::garden::vegetables::Asparagus; // will permit you to avoid repeating this line again and again to use Asparagus type
+
+  pub mod garden; // tells the compiler to include the code in src/garden.rs
+
+  fn main() {
+      let plant = Asparagus {};
+  }
+#+end_src
+
+- The use line tells  the compiler to include the code it finds in /src/garden.rs/. In this file you can see ~pub mod vegetables~. The code in /src/garden/vegetables.rc/ will then be also included.
+
+- Items in a parent module can't use the private items inside child modules, but items in child modules can use the items in their ancestor modules.
+
+- You can expose child code to their parent by using the **pub** keyword.
+
+#+BEGIN_SRC rust
+mod front_of_house {
+    pub mod hosting { // notice the pub keyword in front of the child
+        pub fn add_to_waitlist() {} // notice the pub keyword
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // Absolute path
+    crate::front_of_house::hosting::add_to_waitlist(); // without the pub keyword this won't compile
+
+    // Relative path
+    front_of_house::hosting::add_to_waitlist();
+}
+#+END_SRC
+
+- For structs fields are private by default. You will have to make them public specifically before using them somewhere else.
+
+#+BEGIN_SRC rust
+mod back_of_house {
+    pub struct Breakfast {
+        pub toast: String, // toast is public
+        seasonal_fruit: String, // but seasonal_fruit is private
+    }
+
+    impl Breakfast { // we need a constructor because an item is private so that we can construct an instance of Breakfast
+        pub fn summer(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // Order a breakfast in the summer with Rye toast
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+    // Change our mind about what bread we'd like
+    meal.toast = String::from("Wheat"); // dot notation allowed because the field is public
+    println!("I'd like {} toast please", meal.toast);
+
+    // The next line won't compile if we uncomment it; we're not allowed
+    // to see or modify the seasonal fruit that comes with the meal
+    // meal.seasonal_fruit = String::from("blueberries");
+}
+#+END_SRC
+
+
+* Grouping related code in modules
+
+- We define module with the keyword ~mod~ *followed* by the name of the module.
+- The body of the module then goes inside curly brackets.
+- We can place other modules inside modules.
+- Modules can hold definitions of other items such as structs, enums, constants, traits...
+- The first main.rs or lib.rs is important because its form the /crate/. It's the name of the module structure root.
+
+The /restaurant/ package in the project root is the example explaning this in more detail.
+
+
+* Paths for Referring to an Item in the Module Tree
+
+- Paths are used to show Rust where to find an item in a module tree.
+- There is *two* kind of paths :
+  - *absolute path* : is the full path starting from a crate root. For code from external crate, the absolute path begins with the crate name, for code from the current crate, it begins with *crate*
+  - *relative path* : start from the current module and uses /self/, /super/, or an identifier in the current module.
+
+ Both of them are separated by *::* .
+
+ To call the function /add_to_waitlist()/ in the restaurant package we can use either : **crate::front_of_house::hosting::add_to_waitlist()** or **front_of_house::hosting::add_to_waitlist()**
+
+
+
+* Starting Relative Paths with super
+
+- We can construct relative paths that begin in the parent module by using the **super** keyword as the beginning of the crate path. 
+
+#+BEGIN_SRC rust
+fn deliver_order() {}
+
+mod back_of_house {
+    fn fix_incorrect_order() {
+        cook_order();
+        super::deliver_order(); // the child call the parent method
+    }
+
+    fn cook_order() {}
+}
+#+END_SRC
+
+
+**NB** : In general, Rustaceans prefer to use absolute paths.
+
+
+* Briging Paths into Scope with the use keyword
+
+- You can avoid writing the whole path by using the **use** keyword
+
+#+BEGIN_SRC rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() { // eat_at_restaurant and the use statement are in the same scope
+    hosting::add_to_waitlist(); // no need to write crate::front_of_house::hosting anymore
+}
+#+END_SRC
+
+This won't compile because the use statement and the eat_at_restaurant method aren't in the same scope.
+
+#+BEGIN_SRC rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting;
+
+mod customer {
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist();
+    }
+}
+#+END_SRC
+
+
+* Providing new names with the /as/ keyword
+
+- You can provide alias to the module name by using the **as** keyword followed by the name.
+
+#+BEGIN_SRC rust
+use std::fmt::Result;
+use std::io::Result as IoResult; // IoResult as an alias for std::io::Result
+
+fn function1() -> Result {
+    // --snip--
+}
+
+fn function2() -> IoResult<()> {
+    // --snip--
+}
+#+END_SRC
+
+
+* Re-exporting Names with pub use
+
+- When we export with use keyword the items are private by default. You may want others to import the same into their scope, to do so, use **pub** keyword
+
+#+BEGIN_SRC rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub use crate::front_of_house::hosting; // external users will be able to export the same module but by using the path of the current one
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+#+END_SRC
+
+
+* Using external crates
+
+- You can export external crates by adding them to your /cargo.toml/ file.
+- In your code you then add this line ~use module_path~
+
+#+BEGIN_SRC
+use rand::Rng;
+
+fn main() {
+    let secret_number = rand::thread_rng().gen_range(1..=100);
+}
+#+END_SRC
+
+
+* Using Nested Paths
+
+- To avoid repetition while importing modules from the same crate you must use the nested technics.
+
+#+BEGIN_SRC rust
+use std::cmp::Ordering;
+use std::io;
+
+// becomes
+use std::{cmp::Ordering, io};
+#+END_SRC
+
+- we can also import all of the items in the crate
+
+#+BEGIN_SRC rust
+use std::collections::*; // import all public items of the crate
+#+END_SRC
+
+
+* Separing modules into different files
+
+So far, all the examples in this chapter defined multiple modules in one file. When modules get large, you might want to move their definitions to a separate file to make the code easier to navigate.
+
